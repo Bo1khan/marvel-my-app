@@ -58,10 +58,22 @@ class CharList extends Component {
         });
     }
 
+    itemRefs = [];
+
+    setRef = (ref) => {
+        this.itemRefs.push(ref);
+    }
+
+    focusOnItem = (i) => {
+        this.itemRefs.forEach(item => item.classList.remove('char__item_selected'));
+        this.itemRefs[i].classList.add('char__item_selected');
+        this.itemRefs[i].focus();
+    }
+
     // Этот метод создан для оптимизации, 
     // чтобы не помещать такую конструкцию в метод render
     renderItems(arr) {
-        const items = arr.map(item => {
+        const items = arr.map((item, i) => {
             const { name, thumbnail, id } = item;
             let availableImg = thumbnail.slice(-13, -4);
             let thumbnailStyle = {};
@@ -72,9 +84,20 @@ class CharList extends Component {
 
             return (
                 <li
+                    tabIndex={0}
                     className="char__item"
                     key={id}
-                    onClick={() => this.props.onCharSelected(id)} >
+                    ref={this.setRef}
+                    onClick={() => {
+                        this.props.onCharSelected(id);
+                        this.focusOnItem(i);
+                        }}
+                    onKeyPress={(e) => {
+                        if (e.key === ' ' || e.key === "Enter") {
+                            this.props.onCharSelected(id);
+                            this.focusOnItem(i)
+                        }
+                    }} >
                     <img src={thumbnail} alt={name} style={thumbnailStyle} />
                     <div className="char__name">{name}</div>
                 </li>
@@ -90,7 +113,7 @@ class CharList extends Component {
 
     render() {
         const { charList, loading, error, newItemLoading, offset, charEnded } = this.state;
-        // console.log(charList);
+
         const items = this.renderItems(charList);
 
         const errorMessage = error ? <ErrorMessage /> : null;
